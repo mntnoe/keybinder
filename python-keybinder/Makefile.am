@@ -18,7 +18,6 @@ CLEANFILES = _keybinder.c
 EXTRA_DIST = \
 	_keybinder.defs \
 	_keybinder.override \
-	gen-defs.sh
 
 _keybinder.c: _keybinder.defs _keybinder.override
 
