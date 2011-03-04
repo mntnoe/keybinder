@@ -1,0 +1,33 @@
+#!/bin/sh
+
+exec >&2
+
+. ./config
+
+: ${DESTDIR:=}
+
+echo "Installing to: $DESTDIR$PREFIX"
+
+PKG="keybinder"
+
+LIBDIR=$DESTDIR$LIBDIR
+INCDIR=$DESTDIR$INCDIR
+LUALIBDIR=$DESTDIR$LUALIBDIR
+PYLIBEXEDIR=$DESTDIR$PYLIBEXEDIR
+PKGCONFIGDIR=$DESTDIR$PKGCONFIGDIR
+
+$INSTALL -v -D ./libkeybinder/libkeybinder.so "$LIBDIR/$FULLNAME"
+ln -v -sf "$FULLNAME" "$LIBDIR/$SONAME"
+ln -v -sf "$FULLNAME" "$LIBDIR/${SONAME%.*}"
+$INSTALL -v -m 644 -D ./libkeybinder/keybinder.h "$INCDIR/keybinder.h"
+$INSTALL -v -m 644 -D ./libkeybinder/keybinder.pc "$PKGCONFIGDIR/keybinder.pc"
+
+if [ $HAVE_LUA = "yes" ] ; then
+	$INSTALL -v -D ./lua-keybinder/keybinder.so "$LUALIBDIR/keybinder.so"
+fi
+
+if [ $HAVE_PYTHON = "yes" ] ; then
+	$INSTALL -v -m 644 -D ./python-keybinder/__init__.py "$PYLIBEXEDIR/$PKG/__init__.py"
+	$INSTALL -v -D ./python-keybinder/_keybinder.so "$PYLIBEXEDIR/$PKG/_keybinder.so"
+fi
+

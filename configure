@@ -1,0 +1,208 @@
+#!/bin/sh
+
+: ${PKGNAME:=keybinder}
+: ${VERSION:=0.2.2+}
+
+: ${INSTALL:=install}
+: ${PREFIX:=/usr/local}
+: ${DOCDIR:=$PREFIX/share/doc/$PKGNAME}
+: ${INCDIR:=$PREFIX/include}
+: ${LIBDIR:=$PREFIX/lib}
+: ${PKGCONFIGDIR:=$LIBDIR/pkgconfig}
+
+: ${KB_LT_CURRENT:=0}
+: ${KB_LT_REVISION:=1}
+: ${KB_LT_AGE:=0}
+
+: ${CC:=cc}
+: ${PKG_CONFIG:=pkg-config}
+
+: ${PYTHON:=}
+: ${PYLIBEXEDIR:=}
+
+: ${LUA:=$(which lua)}
+: ${LUA_CFLAGS:=}
+: ${LUALIBDIR:=}
+
+: ${GEN_CFLAGS:=${CFLAGS:--g -O2 -Wall}}
+: ${GEN_LDFLAGS:=-Wl,--as-needed}
+: ${GEN_LIBS:=}
+
+
+die() {
+	printf "Configuration Error: %s\n" "$*" >&2
+	exit 1
+}
+
+talk() {
+	printf "%s\n" "$*" >&2
+}
+
+talk_bit() {
+	# without newline
+	printf "%s" "$*" >&2
+}
+
+check() {
+	# Usage  check what result
+	# if result = 0 ok else fail
+	talk_bit "Checking $1 .... "
+	if [ $2 != 0 ] ; then
+		talk "fail"
+	else
+		talk "ok"
+	fi
+	[ "$2" = 0 ]
+}
+
+check_package_version() {
+	# Usage  check_package_version  gtk+-2.0 2.20 [quiet]
+	$PKG_CONFIG --atleast-version="$2" "$1"
+	local res=$?
+	if test -z $3 ; then
+		check "package $1 version $2" $res
+	fi
+	return $res
+}
+
+append() {
+	# Usage:  append X "text"
+	# (append "text" to variable name X)
+	# http://apenwarr.ca/log/?m=201102#28
+	eval local tmp=\$$1
+	test -z "$tmp" && tmp=$2 || tmp="$tmp $2"
+	eval $1=\$tmp
+}
+
+append_cmd() {
+	# Usage: append X "command $1 $2"
+	local Y=$1
+	shift
+	local X=$($*)
+	append $Y "$X"
+}
+
+check_pymodule() {
+	# Usage:  check_pymodule modulename
+	$PYTHON -c "
+try:
+	import $1
+except ImportError:
+	raise SystemExit(1)
+	"
+	check "python module $1" $?
+}
+
+check_program() {
+	# Usage:  check_program VAR name
+	# Read $VAR and if empty use $(which name)
+	eval V=\$$1
+	: ${V:=$(which $2)}
+	which "$V" >/dev/null 2>&1
+	local res=$?
+	eval $1=\$V
+	check "program $1 .. $V" $res
+	return $res
+}
+
+
+check_python() {
+	check_program PYTHON python && \
+	check_package_version pygtk-2.0 2.12 && \
+	check_package_version pygobject-2.0 2.15.3 && \
+	check_pymodule gtk && \
+	check_program PYGTK_CODEGEN pygtk-codegen-2.0 || return 1
+	append_cmd PY_CFLAGS $PKG_CONFIG --cflags pygtk-2.0 pygobject-2.0
+	append_cmd PY_LIBS $PKG_CONFIG --libs pygtk-2.0 pygobject-2.0
+	append_cmd PY_CFLAGS $PYTHON-config --cflags
+	append_cmd PYGTK_DEFSDIR $PKG_CONFIG --variable=defsdir pygtk-2.0
+	VER=$("$PYTHON" -c "import sys; print sys.version[:3]")
+	if [ x"$VER" = x"2.5" ] ; then
+		: ${PYLIBEXEDIR:=$PREFIX/lib/python$VER/site-packages}
+	else
+		: ${PYLIBEXEDIR:=$PREFIX/lib/python$VER/dist-packages}
+	fi
+}
+
+test_header() {
+	# Usage: test_header headername compilerflags
+	local H=$1
+	shift
+	${CC} "$@" -E -c - 2>/dev/null >&2 <<EOF
+#include <$H>
+EOF
+	check $H $?
+}
+
+check_lua() {
+	: ${LUA_CFLAGS:=$($PKG_CONFIG --cflags lua5.1)}
+	check_program LUA lua || return 1
+	test_header lua.h $LUA_CFLAGS $GEN_CFLAGS || return 1
+	local X=$($LUA -e 'print(_VERSION)')
+	LUA_VERSION=${X#Lua }
+	: ${LUALIBDIR:=$LIBDIR/lua/$LUA_VERSION}
+}
+
+
+append GEN_CFLAGS "-I./libkeybinder"
+append GEN_CFLAGS "-fPIC"
+
+check_package_version gtk+-2.0 2.20
+
+append_cmd GEN_CFLAGS $PKG_CONFIG --cflags gtk+-2.0
+append_cmd GEN_LIBS $PKG_CONFIG --libs gtk+-2.0
+append_cmd GEN_CFLAGS $PKG_CONFIG --cflags x11 xext xrender
+append_cmd GEN_LIBS $PKG_CONFIG --libs x11 xext xrender
+
+check_lua && HAVE_LUA="yes" || HAVE_LUA="no"
+check_python && HAVE_PYTHON="yes" || HAVE_PYTHON="no"
+
+SONAME=libkeybinder.so.$KB_LT_CURRENT
+FULLNAME=$SONAME.$KB_LT_AGE.$KB_LT_REVISION
+
+talk ""
+talk "Building library:" $FULLNAME
+talk "Install into: $LIBDIR"
+talk ""
+talk "Have Lua: $HAVE_LUA"
+talk "Install into: $LUALIBDIR"
+talk ""
+talk "Have Python: $HAVE_PYTHON"
+talk "Install into: $PYLIBEXEDIR"
+talk ""
+talk "Writing config"
+cat >./config <<EOF
+HAVE_PYTHON=$HAVE_PYTHON
+HAVE_LUA=$HAVE_LUA
+CC="$CC"
+
+libkeybinder_SRCS="libkeybinder/bind.o"
+libkeybinder_CFLAGS="$GEN_CFLAGS"
+libkeybinder_LDFLAGS="$GEN_LDFLAGS -Wl,-h,$SONAME"
+libkeybinder_LIBS="$GEN_LIBS"
+
+python_SRCS="python-keybinder/_keybinder.o python-keybinder/_keybindermodule.o"
+python_CFLAGS="$GEN_CFLAGS $PY_CFLAGS"
+python_LDFLAGS="$GEN_LDFLAGS"
+python_LIBS="$GEN_LIBS $PY_LIBS -L./libkeybinder -lkeybinder"
+
+lua_SRCS="lua-keybinder/lkeybinder.o"
+lua_CFLAGS="$GEN_CFLAGS $LUA_CFLAGS"
+lua_LDFLAGS="$GEN_LDFLAGS"
+lua_LIBS="$GEN_LIBS -L./libkeybinder -lkeybinder"
+
+SONAME="$SONAME"
+FULLNAME="$FULLNAME"
+PYLIBEXEDIR="$PYLIBEXEDIR"
+PYGTK_DEFSDIR="$PYGTK_DEFSDIR"
+LUA_VERSION=$LUA_VERSION
+PREFIX=$PREFIX
+DOCDIR=$DOCDIR
+INCDIR=$INCDIR
+LIBDIR=$LIBDIR
+INSTALL=$INSTALL
+PKGCONFIGDIR=$PKGCONFIGDIR
+LUALIBDIR=$LUALIBDIR
+VERSION=$VERSION
+
+EOF

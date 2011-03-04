@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 """
-example.py
-
 Created in 2010 by Ulrik Sverdrup <ulrik.sverdrup@gmail.com>
 This work is placed in the public domain.
 """

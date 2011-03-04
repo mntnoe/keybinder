@@ -4,21 +4,21 @@ Examples for libkeybinder
 The examples require that keybinder is already built and installed,
 otherwise the applications won't find their libraries or modules.
 
-main.c contains a minimal C program using libkeybinder. Run it using::
+cex.c contains a minimal C program using libkeybinder. Run it using::
 
-    make main
-    ./main
+    redo cex
+    ./cex
 
-example.py contains a minimal Python program using keybinder. Run it using::
+pyex.py contains a minimal Python program using keybinder. Run it using::
 
-    ./example.py
+    ./pyex.py
 
-example.lua contains a minimal Lua program using keybinder. Run it using:: 
+luaex.lua contains a minimal Lua program using keybinder. Run it using:: 
 
-    make lua
-    ./example.lua
+    redo luaex
+    ./luaex.lua
 
-vexample.vala contains a minimal Vala program using keybinder. Run it using::
+valaex.vala contains a minimal Vala program using keybinder. Run it using::
 
-    make vala
-    ./vexample
+    redo valaex
+    ./valaex

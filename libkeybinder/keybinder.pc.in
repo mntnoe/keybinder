@@ -1,11 +1,9 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+libdir=@LIBDIR@
+includedir=@INCDIR@
 
 Name: keybinder
 Description: Register global keyboard shortcuts
 Requires: gtk+-2.0
-Version: @PACKAGE_VERSION@
+Version: @VERSION@
 Libs: -L${libdir} -lkeybinder
 Cflags: -I${includedir}

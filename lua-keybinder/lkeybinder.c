@@ -35,7 +35,7 @@
  */
 static int lkeybinder_reg_key;
 
-static void lkeybinder_check_init () {
+static void lkeybinder_check_init (void) {
   static int did_init;
   if (!did_init) {
     keybinder_init();
