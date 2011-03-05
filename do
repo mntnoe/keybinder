@@ -102,7 +102,6 @@ _do()
 	if [ ! -e "$TARGET" ] || [ -e "$TARGET/." -a ! -e "$TARGET.did" ]; then
 		printf '%sdo  %s%s%s%s\n' \
 			"$GREEN" "$DO_DEPTH" "$BOLD" "$DIR$TARGET" "$PLAIN" >&2
-		echo "$PWD/$TARGET" >>"$DO_BUILT"
 		DOFILE=$TARGET.do
 		BASE=$TARGET
 		EXT=
@@ -111,6 +110,7 @@ _do()
 			echo "do: $TARGET: no .do file" >&2
 			return 1
 		fi
+		echo "$PWD/$TARGET" >>"$DO_BUILT"
 		[ ! -e "$DO_BUILD" ] || : >>"$TARGET.did"
 		( _run_dofile "$BASE" "$EXT" "$TARGET.tmp" )
 		RV=$?
