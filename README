@@ -18,18 +18,37 @@ The library contains:
 Compile and Installation Notes
 ------------------------------
 
-If you don't have the neccessary dependencies, and don't want to build 
-the python bindings, you have to explicitly disable them using the
-``--disable-python`` option with configure.
+Configure using::
 
-It is possible you need to tell configure where Lua includes are to be
-found using (adjusting the path appropriately)::
+    ./configure
 
-    ./configure CPPFLAGS=-I/usr/include/lua5.1
+Or with configuration options in variables::
 
-If you want to compile with reduced library linking, configure using::
+    PREFIX=... PYTHON=... LUA=... ./configure
 
-    CC="cc -Wl,--as-needed" ./configure
+
+Build using::
+
+    ./do
+
+Install using:
+
+    ./install
+
+To build the python module properly, define ``PYTHON`` and make sure
+the program python-config is found by appending ``-config`` to that
+place.
+
+To build the lua module properly, define ``LUA`` to the path of the lua
+interpreter and ``LUA_CFLAGS`` to so that the header ``lua.h`` is found.
+The fallback will only look for the pkg-config package ``lua5.1``.
+
+Set PYTHON=no or LUA=no to disable either option.
+
+The package is configured for building with redo_ which you should use
+instead of ``./do`` if available.
+
+.. _redo: https://github.com/apenwarr/redo
 
 History
 -------
@@ -46,4 +65,4 @@ details.
 .. _Tomboy:            http://projects.gnome.org/tomboy/
 .. _`Deskbar Applet`:  http://projects.gnome.org/deskbar-applet/
 
-.. vim: ft=rst tw=72
+.. vim: ft=rst tw=72 sts=4 sw=4 et
