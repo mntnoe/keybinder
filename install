@@ -29,5 +29,6 @@ fi
 if [ $HAVE_PYTHON = "yes" ] ; then
 	$INSTALL -v -m 644 -D ./python-keybinder/__init__.py "$PYLIBEXEDIR/$PKG/__init__.py"
 	$INSTALL -v -D ./python-keybinder/_keybinder.so "$PYLIBEXEDIR/$PKG/_keybinder.so"
+	$PYTHON -mcompileall "$PYLIBEXEDIR/$PKG/"
 fi
 
