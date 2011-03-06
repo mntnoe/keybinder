@@ -6,7 +6,7 @@ otherwise the applications won't find their libraries or modules.
 
 cex.c contains a minimal C program using libkeybinder. Run it using::
 
-    redo cex
+    ./do cex
     ./cex
 
 pyex.py contains a minimal Python program using keybinder. Run it using::
@@ -15,10 +15,10 @@ pyex.py contains a minimal Python program using keybinder. Run it using::
 
 luaex.lua contains a minimal Lua program using keybinder. Run it using:: 
 
-    redo luaex
+    ./do luaex
     ./luaex.lua
 
 valaex.vala contains a minimal Vala program using keybinder. Run it using::
 
-    redo valaex
+    ./do valaex
     ./valaex
