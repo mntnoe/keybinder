@@ -124,7 +124,6 @@ _do()
 		! test -s "$TARGET.tmp2" ||
 		mv "$TARGET.tmp2" "$TARGET" 2>/dev/null
 		rm -f "$TARGET.tmp2"
-		echo "$PWD/$TARGET" >>"$DO_BUILT"
 	else
 		echo "do  $DO_DEPTH$TARGET exists." >&2
 	fi
