@@ -16,10 +16,10 @@ class Mapping (object):
 
 def replacepipe(write, read, mapping):
 	for line in read:
-		line.replace("%", "%%")
+		line_1 = line.replace("%", "%%")
 		# Replace @PREFIX@ by %(PREFIX)s
-		line_new = re.sub(r'@(\w+)@', r'%(\1)s', line)
-		write.write(line_new % Mapping(mapping))
+		line_2 = re.sub(r'@(\w+)@', r'%(\1)s', line_1)
+		write.write(line_2 % Mapping(mapping))
 
 def grabvars(data):
 	"Make a KEY=Value file into a dict"
