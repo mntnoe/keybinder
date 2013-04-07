@@ -1,3 +1,6 @@
+This fork adds a quick hack to keybinder circumventing GTK3's default
+masking of the AltGr key as a modifier.
+
 libkeybinder
 ============
 
