@@ -45,6 +45,10 @@
 #define MODIFIERS_ERROR ((GdkModifierType)(-1))
 #define MODIFIERS_NONE 0
 
+/* Quick hack to enable using the AltGr key as modifier with the
+   default mod mask. */
+#define MOD_ALT_GR 0x80
+
 /* Group to use: Which of configured keyboard Layouts
  * Since grabbing a key blocks its use, we can't grab the corresponding
  * (physical) keys for alternative layouts.
@@ -361,6 +365,7 @@ filter_func (GdkXEvent *gdk_xevent, GdkEvent *event, gpointer data)
 	guint keyval;
 	GdkModifierType consumed, modifiers;
 	guint mod_mask = gtk_accelerator_get_default_mod_mask();
+        mod_mask |= MOD_ALT_GR;
 	GSList *iter;
 
 	(void) event;
@@ -467,16 +472,22 @@ keybinder_init ()
 	GdkKeymap *keymap = gdk_keymap_get_default ();
 	GdkWindow *rootwin = gdk_get_default_root_window ();
 	Display *disp;
+        /*
 	int xkb_opcode;
 	int xkb_event_base;
 	int xkb_error_base;
 	int majver = XkbMajorVersion;
 	int minver = XkbMinorVersion;
+        */
 
 	if (!(disp = XOpenDisplay(NULL))) {
 		g_warning("keybinder_init: Unable to open display");
 		return;
 	}
+
+        /*
+        For the AltGr hack to work, we need to avoid using the XKB
+        extension.
 
 	detected_xkb_extension = XkbQueryExtension(disp,
 	                                           &xkb_opcode,
@@ -486,6 +497,7 @@ keybinder_init ()
 
 	use_xkb_extension = detected_xkb_extension;
 	TRACE(g_print("XKB: %d, version: %d, %d\n", use_xkb_extension, majver, minver));
+        */
 
 	gdk_window_add_filter (rootwin, filter_func, NULL);
 
